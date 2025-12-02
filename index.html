@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindCare+</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        body {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .hidden {
+            display: none !important;
+        }
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            height: 80vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+        .chat-header {
+            background: var(--gradient);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 15px;
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+        }
+        .bot-message {
+            background: #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        .user-message {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            gap: 10px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .chat-input input:focus {
+            border-color: var(--primary);
+        }
+        .chat-input button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .chat-input button:hover {
+            transform: translateY(-2px);
+        }
+        .skip-button {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .skip-button:hover {
+            background: white;
+            color: var(--primary);
+        }
+        /* Main App */
+        .main-app {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideDown 0.8s ease-out;
+        }
+        .header h1 {
+            font-size: 3rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .search-bar {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .search-bar input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        .condition-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out;
+            border: 1px solid #f1f5f9;
+        }
+        .condition-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .condition-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+        .condition-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        .condition-card p {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .symptoms {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+        }
+        .symptoms h4 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+        .tips {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+        }
+        .tips h4 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .card-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .card-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .video-btn {
+            background: var(--primary);
+        }
+        .podcast-btn {
+            background: var(--secondary);
+        }
+        .interview-btn {
+            background: var(--accent);
+        }
+        .card-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: scaleIn 0.3s ease-out;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+        .modal-video, .modal-podcast, .modal-interviews {
+            width: 100%;
+        }
+        .interview-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .interview-thumbnail {
+            width: 120px;
+            height: 80px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        .interview-info {
+            flex: 1;
+        }
+        .interview-info h4 {
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        .interview-info p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        /* Podcast Player */
+        .podcast-player {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .podcast-player audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .podcast-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .podcast-info img {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+        .podcast-details h4 {
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        .podcast-duration {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        /* Recommendation Card */
+        .recommendation-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px auto;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            animation: bounceIn 0.8s ease-out;
+            border: 2px solid var(--primary);
+        }
+        .recommendation-card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        .disclaimer {
+            text-align: center;
+            color: #64748b;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes slideDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes scaleIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        @keyframes bounceIn {
+            0%, 20%, 40%, 60%, 80%, 100% {
+                transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            }
+            0% {
+                opacity: 0;
+                transform: scale3d(.3, .3, .3);
+            }
+            20% {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+            40% {
+                transform: scale3d(.9, .9, .9);
+            }
+            60% {
+                opacity: 1;
+                transform: scale3d(1.03, 1.03, 1.03);
+            }
+            80% {
+                transform: scale3d(.97, .97, .97);
+            }
+            100% {
+                opacity: 1;
+                transform: scale3d(1, 1, 1);
+            }
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 90vh;
+                width: 95%;
+            }
+            .message {
+                max-width: 90%;
+            }
+            .conditions-grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .card-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="chat-container">
+            <div class="chat-header">
+                <img src="https://placehold.co/40x40/6366f1/ffffff?text=🤖" alt="Asistente">
+                👋 Asistente Emocional
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    ¡Hola! Soy tu asistente emocional 🌟<br>
+                    Estoy aquí para ayudarte a entender tus sentimientos.<br>
+                    ¿Te gustaría contarme cómo te has sentido últimamente?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Escribe tu respuesta aquí...">
+                <button id="sendButton">Enviar</button>
+            </div>
+        </div>
+        <button class="skip-button" id="skipButton">Omitir conversación →</button>
+    </div>
+    <!-- Main App -->
+    <div class="main-app hidden" id="mainApp">
+        <div class="header">
+            <h1>🧠 MindCare+</h1>
+            <p>Tu compañero emocional personal</p>
+        </div>
+        <!-- Recommendation Card (if detected) -->
+        <div class="recommendation-card hidden" id="recommendationCard">
+            <h2>💡 Nuestra recomendación para ti</h2>
+            <div id="recommendationContent"></div>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 Busca una condición emocional...">
+        </div>
+        <div class="conditions-grid" id="conditionsGrid">
+            <!-- Conditions will be populated here -->
+        </div>
+        <div class="disclaimer">
+            ⚠️ Esta aplicación NO reemplaza atención médica ni psicológica profesional. 
+            Siempre consulta con un especialista para obtener un diagnóstico adecuado.
+        </div>
+    </div>
+    <!-- Modals -->
+    <div class="modal hidden" id="videoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Videos Educativos</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-video" id="videoContent">
+                <!-- Video content will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <div class="modal hidden" id="podcastModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Podcasts Terapéuticos</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-podcast" id="podcastContent">
+                <!-- Podcast content will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <div class="modal hidden" id="interviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Entrevistas Especializadas</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-interviews" id="interviewContent">
+                <!-- Interview content will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <script>
+        // Emotional conditions data with images
+        const emotionalConditions = [
+            {
+                id: 1,
+                nombre: "Ansiedad",
+                descripcion: "Sentimiento de preocupación excesiva y miedo persistente que puede interferir con la vida diaria.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Preocupación constante", "Taquicardia", "Sudoración", "Tensión muscular", "Insomnio"],
+                consejos: ["Practica respiración profunda", "Haz ejercicio regularmente", "Limita cafeína", "Medita diariamente"],
+                videos: [
+                    { titulo: "Cómo manejar la ansiedad", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Técnicas de relajación", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Meditar para la ansiedad", duracion: "25:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", imagen: "https://placehold.co/60x60/6366f1/ffffff?text=A" },
+                    { titulo: "Superando la ansiedad", duracion: "30:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", imagen: "https://placehold.co/60x60/6366f1/ffffff?text=B" }
+                ],
+                entrevistas: [
+                    { titulo: "Entrevista con Dra. Martínez", descripcion: "Experta en trastornos de ansiedad explica técnicas efectivas" },
+                    { titulo: "Historia de superación", descripcion: "Persona común comparte su experiencia con la ansiedad" }
+                ]
+            },
+            {
+                id: 2,
+                nombre: "Depresión",
+                descripcion: "Trastorno del estado de ánimo caracterizado por tristeza persistente y pérdida de interés en actividades.",
+                imagen: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Tristeza profunda", "Falta de energía", "Pérdida de interés", "Cambios en el sueño", "Sentimientos de culpa"],
+                consejos: ["Mantén rutina diaria", "Busca apoyo social", "Evita el aislamiento", "Consulta profesional"],
+                videos: [
+                    { titulo: "Comprendiendo la depresión", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Recuperación posible", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Vencer la depresión", duracion: "35:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", imagen: "https://placehold.co/60x60/8b5cf6/ffffff?text=D" },
+                    { titulo: "Hablando sobre salud mental", duracion: "40:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", imagen: "https://placehold.co/60x60/8b5cf6/ffffff?text=E" }
+                ],
+                entrevistas: [
+                    { titulo: "Entrevista sobre depresión", descripcion: "Documento académico sobre depresión y tratamiento" },
+                    { titulo: "Testimonio inspirador", descripcion: "Historia real de recuperación" }
+                ]
+            },
+            {
+                id: 3,
+                nombre: "Pérdida de Memoria",
+                descripcion: "Dificultad para recordar información reciente o pasada, que puede ser temporal o persistente.",
+                imagen: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Olvidar fechas importantes", "Perder objetos frecuentes", "Confusión temporal", "Dificultad para encontrar palabras"],
+                consejos: ["Usa recordatorios visuales", "Practica ejercicios cerebrales", "Mantén buena hidratación", "Duerme bien"],
+                videos: [
+                    { titulo: "Mejora tu memoria", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Alzheimer: señales tempranas", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Cuidado cerebral", duracion: "28:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", imagen: "https://placehold.co/60x60/06b6d4/ffffff?text=M" },
+                    { titulo: "Memoria y envejecimiento", duracion: "32:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", imagen: "https://placehold.co/60x60/06b6d4/ffffff?text=N" }
+                ],
+                entrevistas: [
+                    { titulo: "Neurocientífico habla", descripcion: "Descubre cómo funciona la memoria humana" },
+                    { titulo: "Prevención cognitiva", descripcion: "Estrategias para mantener la mente activa" }
+                ]
+            },
+            {
+                id: 4,
+                nombre: "Estrés",
+                descripcion: "Respuesta física y emocional del cuerpo ante situaciones desafiantes o amenazantes.",
+                imagen: "https://images.unsplash.com/photo-1517287202129-7428055895b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Irritabilidad", "Dolor de cabeza", "Fatiga", "Problemas digestivos", "Tensión muscular"],
+                consejos: ["Organiza tu tiempo", "Practica mindfulness", "Haz pausas regulares", "Busca hobbies"],
+                videos: [
+                    { titulo: "Gestiona tu estrés", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Equilibrio trabajo-vida", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Mindfulness diario", duracion: "20:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", imagen: "https://placehold.co/60x60/f59e0b/ffffff?text=S" },
+                    { titulo: "Reducción de estrés", duracion: "22:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", imagen: "https://placehold.co/60x60/f59e0b/ffffff?text=T" }
+                ],
+                entrevistas: [
+                    { titulo: "Coach de bienestar", descripcion: "Técnicas profesionales para manejar el estrés" },
+                    { titulo: "Empresa saludable", descripcion: "Cómo las organizaciones cuidan a sus empleados" }
+                ]
+            },
+            {
+                id: 5,
+                nombre: "Insomnio",
+                descripcion: "Dificultad persistente para conciliar el sueño o mantenerlo durante la noche.",
+                imagen: "https://images.unsplash.com/photo-1511988617509-a57c8a288659?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Dificultad para dormir", "Despertares frecuentes", "Cansancio matutino", "Irritabilidad", "Problemas de concentración"],
+                consejos: ["Establece horario fijo", "Evita pantallas antes de dormir", "Crea ambiente propicio", "Evita cafeína tarde"],
+                videos: [
+                    { titulo: "Rutinas para dormir", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Terapia cognitiva para insomnio", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Sueño reparador", duracion: "26:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", imagen: "https://placehold.co/60x60/ef4444/ffffff?text=I" },
+                    { titulo: "Ruido blanco terapéutico", duracion: "30:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", imagen: "https://placehold.co/60x60/ef4444/ffffff?text=J" }
+                ],
+                entrevistas: [
+                    { titulo: "Especialista en sueño", descripcion: "Todo sobre trastornos del sueño y soluciones" },
+                    { titulo: "Transformación del descanso", descripcion: "Historia de alguien que superó el insomnio" }
+                ]
+            },
+            {
+                id: 6,
+                nombre: "Ataques de Pánico",
+                descripcion: "Episodios repentinos de intenso miedo o incomodidad que alcanzan su punto máximo en minutos.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Palpitaciones", "Sudoración", "Temblor", "Sensación de ahogo", "Miedo a morir"],
+                consejos: ["Aprende técnicas de respiración", "Identifica desencadenantes", "Practica grounding", "Busca ayuda profesional"],
+                videos: [
+                    { titulo: "Qué hacer en un ataque", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Prevención de pánico", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Calma en momentos críticos", duracion: "24:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3", imagen: "https://placehold.co/60x60/10b981/ffffff?text=P" },
+                    { titulo: "Entendiendo el pánico", duracion: "28:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3", imagen: "https://placehold.co/60x60/10b981/ffffff?text=Q" }
+                ],
+                entrevistas: [
+                    { titulo: "Psicólogo clínico explica", descripcion: "Análisis profundo de trastornos de pánico" },
+                    { titulo: "Historia de recuperación", descripcion: "Cómo superar los ataques de forma efectiva" }
+                ]
+            },
+            {
+                id: 7,
+                nombre: "Baja Autoestima",
+                descripcion: "Opinión negativa de uno mismo que afecta la confianza y valor personal.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Autocrítica severa", "Comparación constante", "Evitar desafíos", "Necesidad de aprobación", "Sensibilidad a críticas"],
+                consejos: ["Practica afirmaciones positivas", "Celebra pequeños logros", "Rodéate de personas positivas", "Evita comparaciones"],
+                videos: [
+                    { titulo: "Construye tu autoestima", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Amor propio", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Autoaceptación", duracion: "30:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3", imagen: "https://placehold.co/60x60/ec4899/ffffff?text=A" },
+                    { titulo: "Confianza en ti mismo", duracion: "25:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3", imagen: "https://placehold.co/60x60/ec4899/ffffff?text=B" }
+                ],
+                entrevistas: [
+                    { titulo: "Coach de desarrollo personal", descripcion: "Estrategias para mejorar la autoimagen" },
+                    { titulo: "Viaje de transformación", descripcion: "Persona comparte su historia de crecimiento" }
+                ]
+            },
+            {
+                id: 8,
+                nombre: "TOC (Trastorno Obsesivo Compulsivo)",
+                descripcion: "Patrón de pensamientos obsesivos no deseados que conducen a comportamientos compulsivos repetitivos.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Pensamientos intrusivos", "Comportamientos repetitivos", "Necesidad de control", "Angustia intensa", "Tiempo consumido"],
+                consejos: ["No luches contra obsesiones", "Busca terapia cognitivo-conductual", "Practica aceptación", "Consulta especialista"],
+                videos: [
+                    { titulo: "Entendiendo el TOC", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Tratamiento efectivo", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Rompiendo ciclos", duracion: "33:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", imagen: "https://placehold.co/60x60/8b5cf6/ffffff?text=T" },
+                    { titulo: "Vida con TOC", duracion: "29:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3", imagen: "https://placehold.co/60x60/8b5cf6/ffffff?text=O" }
+                ],
+                entrevistas: [
+                    { titulo: "Psicoterapeuta especializado", descripcion: "Casos clínicos y enfoques terapéuticos" },
+                    { titulo: "Historia de superación", descripcion: "Persona comparte su experiencia con el TOC" }
+                ]
+            },
+            {
+                id: 9,
+                nombre: "Bipolaridad",
+                descripcion: "Trastorno del estado de ánimo caracterizado por cambios extremos de humor entre manía y depresión.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Episodios de manía", "Episodios depresivos", "Cambios energéticos", "Impulsividad", "Irritabilidad"],
+                consejos: ["Mantén tratamiento médico", "Registra estados de ánimo", "Evita sustancias", "Busca apoyo familiar"],
+                videos: [
+                    { titulo: "Viviendo con bipolaridad", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Manejo del trastorno", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Equilibrio emocional", duracion: "35:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3", imagen: "https://placehold.co/60x60/06b6d4/ffffff?text=B" },
+                    { titulo: "Familia y bipolaridad", duracion: "31:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-18.mp3", imagen: "https://placehold.co/60x60/06b6d4/ffffff?text=C" }
+                ],
+                entrevistas: [
+                    { titulo: "Psiquiatra explica", descripcion: "Diagnóstico y tratamiento actualizado" },
+                    { titulo: "Voz de pacientes", descripcion: "Experiencias auténticas de convivencia" }
+                ]
+            },
+            {
+                id: 10,
+                nombre: "Déficit de Atención",
+                descripcion: "Dificultad para mantener la concentración en tareas o actividades por períodos prolongados.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Distracción fácil", "Olvido frecuente", "Impulsividad", "Hiperactividad", "Dificultad para seguir instrucciones"],
+                consejos: ["Divide tareas grandes", "Usa temporizadores", "Elimina distracciones", "Establece rutinas claras"],
+                videos: [
+                    { titulo: "TDAH en adultos", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Estrategias de organización", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Enfoque y productividad", duracion: "27:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-19.mp3", imagen: "https://placehold.co/60x60/f59e0b/ffffff?text=D" },
+                    { titulo: "Vida con TDAH", duracion: "32:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-20.mp3", imagen: "https://placehold.co/60x60/f59e0b/ffffff?text=E" }
+                ],
+                entrevistas: [
+                    { titulo: "Neuropsicólogo especializado", descripcion: "Impacto del TDAH en el desarrollo personal" },
+                    { titulo: "Éxito con déficit", descripcion: "Personas exitosas que viven con TDAH" }
+                ]
+            },
+            {
+                id: 11,
+                nombre: "Duelo",
+                descripcion: "Respuesta emocional natural ante la pérdida de una persona querida u otra pérdida significativa.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Tristeza profunda", "Negación", "Ira", "Culpa", "Aislamiento", "Cambios en el apetito"],
+                consejos: ["Permítete sentir", "Busca apoyo", "Honra tus sentimientos", "Considera terapia de duelo"],
+                videos: [
+                    { titulo: "Proceso del duelo", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Sanando heridas", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Acompañando el dolor", duracion: "34:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", imagen: "https://placehold.co/60x60/6b7280/ffffff?text=D" },
+                    { titulo: "Transformación del duelo", duracion: "28:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", imagen: "https://placehold.co/60x60/6b7280/ffffff?text=E" }
+                ],
+                entrevistas: [
+                    { titulo: "Terapeuta de duelo", descripcion: "Etapas del proceso y cómo navegarlas" },
+                    { titulo: "Historias de resiliencia", descripcion: "Cómo encontrar significado después de la pérdida" }
+                ]
+            },
+            {
+                id: 12,
+                nombre: "Fobias",
+                descripcion: "Miedo intenso e irracional hacia objetos, situaciones o actividades específicas.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Miedo extremo", "Evitación", "Ansiedad anticipatoria", "Síntomas físicos", "Reconocimiento de irracionalidad"],
+                consejos: ["Exposición gradual", "Técnicas de relajación", "Terapia cognitivo-conductual", "No evites sistemáticamente"],
+                videos: [
+                    { titulo: "Superando miedos", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Terapia de exposición", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Coraje interior", duracion: "26:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", imagen: "https://placehold.co/60x60/dc2626/ffffff?text=F" },
+                    { titulo: "Mente valiente", duracion: "30:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", imagen: "https://placehold.co/60x60/dc2626/ffffff?text=G" }
+                ],
+                entrevistas: [
+                    { titulo: "Especialista en fobias", descripcion: "Tratamientos efectivos y casos de éxito" },
+                    { titulo: "Victoria personal", descripcion: "Persona comparte cómo superó su fobia" }
+                ]
+            },
+            {
+                id: 13,
+                nombre: "Dependencia Emocional",
+                descripcion: "Necesidad excesiva de validación y afecto de otros para sentirse bien con uno mismo.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Miedo al abandono", "Baja autoestima", "Relaciones tóxicas", "Negación de necesidades personales", "Celos"],
+                consejos: ["Desarrolla independencia", "Trabaja tu autoestima", "Establece límites sanos", "Busca terapia especializada"],
+                videos: [
+                    { titulo: "Independencia emocional", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Relaciones sanas", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Libertad emocional", duracion: "31:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", imagen: "https://placehold.co/60x60/ec4899/ffffff?text=D" },
+                    { titulo: "Amor propio verdadero", duracion: "27:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", imagen: "https://placehold.co/60x60/ec4899/ffffff?text=E" }
+                ],
+                entrevistas: [
+                    { titulo: "Psicóloga especializada", descripcion: "Cómo construir relaciones equilibradas" },
+                    { titulo: "Transformación personal", descripcion: "Historia de quien rompió ciclos de dependencia" }
+                ]
+            },
+            {
+                id: 14,
+                nombre: "Aislamiento",
+                descripcion: "Retiro voluntario o involuntario de interacciones sociales y relaciones interpersonales.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Evitación social", "Soledad persistente", "Pérdida de intereses", "Tristeza", "Retiro progresivo"],
+                consejos: ["Inicia contacto gradual", "Únete a grupos de interés", "Busca actividades sociales", "Considera ayuda profesional"],
+                videos: [
+                    { titulo: "Rompiendo el aislamiento", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Conexión humana", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Comunidad y pertenencia", duracion: "29:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", imagen: "https://placehold.co/60x60/6366f1/ffffff?text=A" },
+                    { titulo: "Salud social", duracion: "25:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", imagen: "https://placehold.co/60x60/6366f1/ffffff?text=B" }
+                ],
+                entrevistas: [
+                    { titulo: "Terapeuta social", descripcion: "Impacto del aislamiento y formas de reconectar" },
+                    { titulo: "Historia de reconexión", descripcion: "Persona que volvió a la vida social" }
+                ]
+            },
+            {
+                id: 15,
+                nombre: "Desmotivación",
+                descripcion: "Falta de impulso o interés para iniciar o continuar actividades importantes.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Procrastinación", "Indiferencia", "Falta de metas", "Sensación de vacío", "Evitación de responsabilidades"],
+                consejos: ["Establece metas pequeñas", "Celebra avances mínimos", "Busca propósito", "Rodéate de motivación"],
+                videos: [
+                    { titulo: "Reaviva tu motivación", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Encuentra tu propósito", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Chispa interna", duracion: "28:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", imagen: "https://placehold.co/60x60/10b981/ffffff?text=D" },
+                    { titulo: "Productividad consciente", duracion: "33:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", imagen: "https://placehold.co/60x60/10b981/ffffff?text=E" }
+                ],
+                entrevistas: [
+                    { titulo: "Coach de motivación", descripcion: "Técnicas para recuperar el impulso vital" },
+                    { titulo: "Renacimiento personal", descripcion: "Persona que superó la crisis de motivación" }
+                ]
+            },
+            {
+                id: 16,
+                nombre: "Irritabilidad",
+                descripcion: "Tendencia a experimentar irritación, frustración o enojo de manera frecuente e intensa.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Reacciones exageradas", "Paciencia reducida", "Conflictos interpersonales", "Tensión muscular", "Cambios de humor"],
+                consejos: ["Identifica desencadenantes", "Practica regulación emocional", "Haz ejercicio", "Mantén buen descanso"],
+                videos: [
+                    { titulo: "Controla tu ira", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Inteligencia emocional", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Paz interior", duracion: "24:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3", imagen: "https://placehold.co/60x60/f59e0b/ffffff?text=I" },
+                    { titulo: "Emociones sanas", duracion: "26:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3", imagen: "https://placehold.co/60x60/f59e0b/ffffff?text=J" }
+                ],
+                entrevistas: [
+                    { titulo: "Psicólogo emocional", descripcion: "Cómo gestionar emociones intensas" },
+                    { titulo: "Transformación emocional", descripcion: "Persona que aprendió a manejar su irritabilidad" }
+                ]
+            },
+            {
+                id: 17,
+                nombre: "Hipersensibilidad",
+                descripcion: "Mayor sensibilidad sensorial y emocional ante estímulos internos y externos.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Sobrecarga sensorial", "Empatía intensa", "Reacciones emocionales profundas", "Necesidad de espacio", "Facilidad para herirse"],
+                consejos: ["Crea entornos calmados", "Practica autoconciencia", "Establece límites", "Busca comprensión"],
+                videos: [
+                    { titulo: "Vivir con alta sensibilidad", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Fortalezas de la sensibilidad", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Sensibilidad consciente", duracion: "30:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3", imagen: "https://placehold.co/60x60/8b5cf6/ffffff?text=H" },
+                    { titulo: "Don de la sensibilidad", duracion: "28:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3", imagen: "https://placehold.co/60x60/8b5cf6/ffffff?text=I" }
+                ],
+                entrevistas: [
+                    { titulo: "Experto en alta sensibilidad", descripcion: "Características y potencial de personas altamente sensibles" },
+                    { titulo: "Orgullo sensible", descripcion: "Persona que abrazó su hipersensibilidad como fortaleza" }
+                ]
+            },
+            {
+                id: 18,
+                nombre: "Problemas de Concentración",
+                descripcion: "Dificultad para enfocar la atención en tareas o mantenerla durante períodos necesarios.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Distracción constante", "Olvido de detalles", "Dificultad para seguir conversaciones", "Errores por falta de atención", "Multitasking fallido"],
+                consejos: ["Elimina distracciones", "Usa técnica Pomodoro", "Practica mindfulness", "Organiza tu entorno"],
+                videos: [
+                    { titulo: "Mejora tu enfoque", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Atención plena", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Mente enfocada", duracion: "27:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", imagen: "https://placehold.co/60x60/06b6d4/ffffff?text=C" },
+                    { titulo: "Productividad mental", duracion: "31:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3", imagen: "https://placehold.co/60x60/06b6d4/ffffff?text=D" }
+                ],
+                entrevistas: [
+                    { titulo: "Neurocientífico explica", descripcion: "Cómo funciona la atención y cómo optimizarla" },
+                    { titulo: "Historia de mejora", descripcion: "Persona que superó sus problemas de concentración" }
+                ]
+            },
+            {
+                id: 19,
+                nombre: "Burnout",
+                descripcion: "Estado de agotamiento físico y emocional causado por estrés laboral crónico.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Agotamiento extremo", "Cinismo laboral", "Reducida eficacia", "Insomnio", "Problemas de salud"],
+                consejos: ["Establece límites laborales", "Busca balance vida-trabajo", "Toma descansos regulares", "Prioriza autocuidado"],
+                videos: [
+                    { titulo: "Prevención del burnout", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Recuperación profesional", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Bienestar laboral", duracion: "32:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3", imagen: "https://placehold.co/60x60/ef4444/ffffff?text=B" },
+                    { titulo: "Equilibrio profesional", duracion: "29:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-18.mp3", imagen: "https://placehold.co/60x60/ef4444/ffffff?text=C" }
+                ],
+                entrevistas: [
+                    { titulo: "Experto en bienestar laboral", descripcion: "Signos de alerta y estrategias preventivas" },
+                    { titulo: "Historia de recuperación", descripcion: "Profesional que superó el síndrome de burnout" }
+                ]
+            },
+            {
+                id: 20,
+                nombre: "Trastornos Alimenticios",
+                descripcion: "Patrones anormales de comer que afectan negativamente la salud física y emocional.",
+                imagen: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200&q=80",
+                sintomas: ["Preocupación extrema por peso", "Restricción alimentaria", "Episodios de atracón", "Vómitos inducidos", "Distorsión corporal"],
+                consejos: ["Busca ayuda especializada", "Desarrolla relación sana con comida", "Trabaja autoestima", "Involucra red de apoyo"],
+                videos: [
+                    { titulo: "Recuperación alimentaria", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+                    { titulo: "Nutrición emocional", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
+                ],
+                podcasts: [
+                    { titulo: "Sanando con comida", duracion: "35:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-19.mp3", imagen: "https://placehold.co/60x60/10b981/ffffff?text=T" },
+                    { titulo: "Cuerpo y mente sanos", duracion: "33:00", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-20.mp3", imagen: "https://placehold.co/60x60/10b981/ffffff?text=U" }
+                ],
+                entrevistas: [
+                    { titulo: "Nutricionista especializada", descripcion: "Enfoques integrales para la recuperación" },
+                    { titulo: "Historia de sanación", descripcion: "Persona que superó un trastorno alimenticio" }
+                ]
+            }
+        ];
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const skipButton = document.getElementById('skipButton');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const mainApp = document.getElementById('mainApp');
+        const searchInput = document.getElementById('searchInput');
+        const conditionsGrid = document.getElementById('conditionsGrid');
+        const recommendationCard = document.getElementById('recommendationCard');
+        const recommendationContent = document.getElementById('recommendationContent');
+        // Modal elements
+        const videoModal = document.getElementById('videoModal');
+        const podcastModal = document.getElementById('podcastModal');
+        const interviewModal = document.getElementById('interviewModal');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+        const videoContent = document.getElementById('videoContent');
+        const podcastContent = document.getElementById('podcastContent');
+        const interviewContent = document.getElementById('interviewContent');
+        let conversationStage = 0;
+        let userResponses = [];
+        let detectedCondition = null;
+        let responseCount = 0;
+        // Chat questions
+        const chatQuestions = [
+            "¡Hola! Soy tu asistente emocional 🌟<br>Estoy aquí para ayudarte a entender tus sentimientos.<br>¿Te gustaría contarme cómo te has sentido últimamente?",
+            "Perfecto, cuéntame más...<br>¿Has sentido ansiedad o preocupación constante?",
+            "Entiendo... ¿Y qué tal tu estado de ánimo?<br>¿Te has sentido triste o sin energía?",
+            "Gracias por compartir eso.<br>¿Has tenido problemas para dormir o concentrarte?",
+            "Interesante... ¿Has sentido cambios extremos de humor o energía?",
+            "¿Has experimentado pensamientos recurrentes difíciles de controlar?",
+            "¿Te sientes valorado(a) por ti mismo(a)?<br>O ¿has sentido baja autoestima?",
+            "¿Has sentido miedo intenso o ataques de pánico?",
+            "¿Te has sentido aislado(a) o con poco apoyo social?",
+            "Muchas gracias por tu honestidad.<br>Basado en lo que me cuentas, puedo ofrecerte algunas recomendaciones."
+        ];
+        // Enhanced bot responses based on keywords
+        const botResponses = {
+            "mal": "Lamento que te sientas así. Es completamente válido sentirse mal a veces. ¿Te gustaría contarme más sobre lo que está pasando? A veces hablar ayuda a procesar las emociones.",
+            "bien": "Me alegra saber que te sientes bien. Es importante reconocer cuando estamos en buen estado emocional. ¿Hay algo específico que te preocupe o quieras explorar?",
+            "ansiedad": "La ansiedad puede ser muy incómoda y abrumadora. Es importante reconocerla como una señal de que tu cuerpo y mente necesitan atención. Hay muchas técnicas efectivas para manejarla. ¿Te gustaría compartir más sobre tus preocupaciones?",
+            "triste": "Sentirse triste es una emoción humana completamente válida. A veces necesitamos permitirnos sentir esta emoción para poder procesarla. Si persiste, puede ser útil hablar con un profesional. ¿Te gustaría contarme más sobre lo que te hace sentir así?",
+            "cansado": "El cansancio puede afectar todo nuestro bienestar físico y emocional. Es importante escuchar a nuestro cuerpo y darle el descanso que necesita. ¿Has tenido oportunidad de descansar adecuadamente últimamente?",
+            "estres": "El estrés es común en nuestra vida moderna, pero también es manejable con las herramientas adecuadas. Hay muchas técnicas efectivas para reducir el estrés. ¿Te gustaría que te sugiriera algunas estrategias específicas?",
+            "enojado": "Sentir ira es completamente normal y humano. Lo importante es cómo expresamos y manejamos estas emociones. A veces el enojo es una señal de que algo necesita cambiar en nuestra vida. ¿Te gustaría explorar qué te está haciendo sentir así?",
+            "solo": "Sentirse solo puede ser muy difícil, pero es importante recordar que no estás realmente solo. Conectar con otros puede ayudar mucho, aunque a veces es difícil dar ese primer paso. ¿Te gustaría hablar sobre qué tipo de conexión buscas?",
+            "default": "Gracias por compartir eso. Cada experiencia emocional es única y válida. ¿Hay algo más que te gustaría mencionar o alguna emoción específica que quieras explorar más a fondo?"
+        };
+        // Initialize chat
+        function initChat() {
+            addBotMessage(chatQuestions[0]);
+        }
+        // Add bot message
+        function addBotMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message bot-message';
+            messageElement.innerHTML = message;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        // Add user message
+        function addUserMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message user-message';
+            messageElement.textContent = message;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        // Get bot response based on user input
+        function getBotResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            // Check for specific keywords
+            for (const [keyword, response] of Object.entries(botResponses)) {
+                if (lowerMessage.includes(keyword) && keyword !== "default") {
+                    return response;
+                }
+            }
+            // Default response
+            return botResponses.default;
+        }
+        // Send message handler
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            addUserMessage(message);
+            userResponses.push(message.toLowerCase());
+            responseCount++;
+            userInput.value = '';
+            // Detect condition after 5 responses
+            if (responseCount >= 5) {
+                detectCondition();
+                setTimeout(() => {
+                    addBotMessage("Muchas gracias por tu honestidad.<br>Basado en lo que me cuentas, puedo ofrecerte algunas recomendaciones.");
+                    setTimeout(() => {
+                        showMainApp();
+                    }, 2000);
+                }, 1000);
+                return;
+            }
+            if (conversationStage < chatQuestions.length - 2) {
+                conversationStage++;
+                setTimeout(() => {
+                    const botResponse = getBotResponse(message);
+                    addBotMessage(botResponse + "<br><br>" + chatQuestions[conversationStage + 1]);
+                }, 1000);
+            } else if (conversationStage === chatQuestions.length - 2) {
+                conversationStage++;
+                setTimeout(() => {
+                    addBotMessage(chatQuestions[conversationStage]);
+                    // Detect condition after final question
+                    setTimeout(() => {
+                        detectCondition();
+                        showMainApp();
+                    }, 2000);
+                }, 1000);
+            }
+        }
+        // Detect condition based on responses
+        function detectCondition() {
+            const keywords = {
+                ansiedad: ['ansiedad', 'preocupado', 'nervioso', 'miedo', 'angustia', 'nervios', 'preocupacion'],
+                depresion: ['triste', 'deprimido', 'sin energia', 'vacio', 'llorar', 'tristeza', 'desanimado'],
+                estres: ['estres', 'presion', 'agotado', 'cansado', 'tension', 'sobrecargado', 'presionado'],
+                insomnio: ['dormir', 'insomnio', 'despierto', 'sueno', 'cansancio', 'descanso', 'duermo'],
+                baja_autoestima: ['valgame', 'no sirvo', 'fracaso', 'autoestima', 'inutil', 'merecer', 'valioso'],
+                panico: ['panico', 'miedo', 'ataque', 'corazon', 'ahogo', 'asfixia', 'terror'],
+                aislamiento: ['solo', 'aislado', 'social', 'amigos', 'contacto', 'acompanado', 'conectado'],
+                desmotivacion: ['motivacion', 'ganas', 'interes', 'aburrido', 'pereza', 'energia', 'impulso']
+            };
+            let maxMatches = 0;
+            let detected = null;
+            for (const [condition, words] of Object.entries(keywords)) {
+                let matches = 0;
+                for (const response of userResponses) {
+                    for (const word of words) {
+                        if (response.includes(word)) {
+                            matches++;
+                        }
+                    }
+                }
+                if (matches > maxMatches) {
+                    maxMatches = matches;
+                    detected = condition;
+                }
+            }
+            if (detected && maxMatches > 0) {
+                const conditionMap = {
+                    'ansiedad': 'Ansiedad',
+                    'depresion': 'Depresión',
+                    'estres': 'Estrés',
+                    'insomnio': 'Insomnio',
+                    'baja_autoestima': 'Baja Autoestima',
+                    'panico': 'Ataques de Pánico',
+                    'aislamiento': 'Aislamiento',
+                    'desmotivacion': 'Desmotivación'
+                };
+                detectedCondition = emotionalConditions.find(c => c.nombre === conditionMap[detected]);
+                if (detectedCondition) {
+                    showRecommendation(detectedCondition);
+                }
+            }
+        }
+        // Show recommendation card
+        function showRecommendation(condition) {
+            recommendationContent.innerHTML = `
+                <h3>${condition.nombre}</h3>
+                <img src="${condition.imagen}" alt="${condition.nombre}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 15px; margin: 15px 0;">
+                <p><strong>Descripción:</strong> ${condition.descripcion}</p>
+                <div class="symptoms">
+                    <h4>Síntomas comunes:</h4>
+                    <ul>${condition.sintomas.slice(0, 3).map(s => `<li>${s}</li>`).join('')}</ul>
+                </div>
+                <div class="tips">
+                    <h4>Consejos iniciales:</h4>
+                    <ul>${condition.consejos.slice(0, 2).map(c => `<li>${c}</li>`).join('')}</ul>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="card-button video-btn" onclick="showVideos(${condition.id})" style="width: 100%; margin-bottom: 10px;">Ver Videos Relacionados</button>
+                    <button class="card-button podcast-btn" onclick="showPodcasts(${condition.id})" style="width: 100%; margin-bottom: 10px;">Escuchar Podcasts</button>
+                    <button class="card-button interview-btn" onclick="showInterviews(${condition.id})" style="width: 100%;">Ver Entrevistas</button>
+                </div>
+                <p style="margin-top: 15px; font-style: italic; color: #64748b;">Esta recomendación es orientativa. Consulta con un profesional para un diagnóstico preciso.</p>
+            `;
+            recommendationCard.classList.remove('hidden');
+        }
+        // Skip conversation
+        skipButton.addEventListener('click', showMainApp);
+        // Show main app
+        function showMainApp() {
+            welcomeScreen.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+            renderConditions(emotionalConditions);
+        }
+        // Render conditions
+        function renderConditions(conditions) {
+            conditionsGrid.innerHTML = '';
+            conditions.forEach(condition => {
+                const card = document.createElement('div');
+                card.className = 'condition-card';
+                card.innerHTML = `
+                    <img src="${condition.imagen}" alt="${condition.nombre}">
+                    <h3>${condition.nombre}</h3>
+                    <p>${condition.descripcion}</p>
+                    <div class="symptoms">
+                        <h4>Síntomas:</h4>
+                        <p>${condition.sintomas.join(', ')}</p>
+                    </div>
+                    <div class="tips">
+                        <h4>Consejos prácticos:</h4>
+                        <p>${condition.consejos.join(', ')}</p>
+                    </div>
+                    <div class="card-buttons">
+                        <button class="card-button video-btn" onclick="showVideos(${condition.id})">_videos</button>
+                        <button class="card-button podcast-btn" onclick="showPodcasts(${condition.id})">_Podcast</button>
+                        <button class="card-button interview-btn" onclick="showInterviews(${condition.id})">_Entrevistas</button>
+                    </div>
+                `;
+                conditionsGrid.appendChild(card);
+            });
+        }
+        // Search functionality
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            if (searchTerm.length === 0) {
+                renderConditions(emotionalConditions);
+                return;
+            }
+            const filteredConditions = emotionalConditions.filter(condition => 
+                condition.nombre.toLowerCase().includes(searchTerm) ||
+                condition.descripcion.toLowerCase().includes(searchTerm) ||
+                condition.sintomas.some(s => s.toLowerCase().includes(searchTerm)) ||
+                condition.consejos.some(c => c.toLowerCase().includes(searchTerm))
+            );
+            renderConditions(filteredConditions);
+        });
+        // Modal functions
+        function showVideos(conditionId) {
+            const condition = emotionalConditions.find(c => c.id === conditionId);
+            if (!condition) return;
+            videoContent.innerHTML = `
+                <h3>Videos sobre ${condition.nombre}</h3>
+                ${condition.videos.map(video => `
+                    <div style="margin: 20px 0;">
+                        <h4>${video.titulo}</h4>
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+                            <iframe 
+                                src="${video.url.replace('watch?v=', 'embed/')}" 
+                                frameborder="0" 
+                                allowfullscreen 
+                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 10px;">
+                            </iframe>
+                        </div>
+                        <button onclick="window.open('${video.url}', '_blank')" 
+                                style="margin-top: 10px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            Ver en YouTube
+                        </button>
+                    </div>
+                `).join('')}
+            `;
+            videoModal.classList.remove('hidden');
+        }
+
+        // ✅ FUNCIÓN MODIFICADA: usa el iframe embebido de Spotify
+        function showPodcasts(conditionId) {
+            const condition = emotionalConditions.find(c => c.id === conditionId);
+            if (!condition) return;
+
+            // Enlace fijo del track de Spotify proporcionado
+            const spotifyEmbedUrl = "https://open.spotify.com/embed/track/3IEvQ1CzszUJtTRLmmMJ2X";
+
+            podcastContent.innerHTML = `
+                <h3>Podcasts sobre ${condition.nombre}</h3>
+                <div class="podcast-player">
+                    <div class="podcast-info">
+                        <img src="https://placehold.co/60x60/1db954/ffffff?text=S" alt="Spotify">
+                        <div class="podcast-details">
+                            <h4>Escucha en Spotify</h4>
+                            <div class="podcast-duration">Reproducción integrada</div>
+                        </div>
+                    </div>
+                    <iframe 
+                        src="${spotifyEmbedUrl}" 
+                        width="100%" 
+                        height="152" 
+                        frameBorder="0" 
+                        allow="encrypted-media; clipboard-write" 
+                        allowfullscreen
+                        style="border-radius: 10px; margin-top: 10px;">
+                    </iframe>
+                </div>
+            `;
+            podcastModal.classList.remove('hidden');
+        }
+
+        function showInterviews(conditionId) {
+            const condition = emotionalConditions.find(c => c.id === conditionId);
+            if (!condition) return;
+            interviewContent.innerHTML = `
+                <h3>Entrevistas sobre ${condition.nombre}</h3>
+                ${condition.entrevistas.map(interview => `
+                    <div class="interview-item">
+                        <div class="interview-thumbnail">
+                            <img src="https://placehold.co/120x80/06b6d4/ffffff?text=PDF" alt="${interview.titulo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                        </div>
+                        <div class="interview-info">
+                            <h4>${interview.titulo}</h4>
+                            <p>${interview.descripcion}</p>
+                            <button onclick="window.open('https://www.docsity.com/es/docs/entrevista-depresion/5910934/', '_blank')" 
+                                    style="margin-top: 10px; background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
+                                Ver Entrevista
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+            interviewModal.classList.remove('hidden');
+        }
+        // Close modals
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('.modal').classList.add('hidden');
+            });
+        });
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        // Initialize
+        initChat();
+        // Make functions global for inline event handlers
+        window.showVideos = showVideos;
+        window.showPodcasts = showPodcasts;
+        window.showInterviews = showInterviews;
+    </script>
+</body>
+</html>
